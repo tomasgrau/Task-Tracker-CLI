@@ -16,7 +16,7 @@ def add_task(task: str):
     new_task = {
         "id": id,
         "description": task,
-        "status": "To do",
+        "status": "to-do",
         "createdAt": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "updatedAt": ""
     }
@@ -75,7 +75,7 @@ def list_tasks():
             print("There are not tasks yet")
             return
         for task in tasks_list:
-            print(f"- {task["description"]}  State: {task["status"]}")
+            print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")
 
 def list_in_progress():
     with open("tasks.json", "r") as tasks_file:
@@ -87,7 +87,7 @@ def list_in_progress():
         in_progress_found = False
         for task in tasks_list:
             if task["status"] == "in-progress":
-                print(f"- {task["description"]}  State: {task["status"]}")
+                print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")
                 in_progress_found = True
         if not in_progress_found:
             print("There are no tasks in-progress yet")
@@ -103,11 +103,47 @@ def list_done():
         done_tasks_found = False
         for task in tasks_list:
             if task["status"] == "done":
-                print(f"- {task["description"]}  State: {task["status"]}")           
+                print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")           
                 done_tasks_found = True
         
         if not done_tasks_found:
             print("There are no tasks done yet")
+
+def mark_in_progress(id):
+    with open("tasks.json", "r") as tasks_file:
+        tasks_list = json.load(tasks_file)
+
+        task_found = False
+        for task in tasks_list:
+            if task["id"] == id:
+                task["status"] = "in-progress"
+                task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                task_found = True
+                with open("tasks.json", "w") as tasks_file:
+                    json.dump(tasks_list, tasks_file, indent=2)
+                print(f"Task with id: {id} is now in-progress")
+
+        if not task_found:
+            print(f"No task with id: {id} was found")
+
+
+def mark_done(id):
+    with open("tasks.json", "r") as tasks_file:
+        tasks_list = json.load(tasks_file)
+
+        task_found = False
+        for task in tasks_list:
+            if task["id"] == id:
+                task["status"] = "done"
+                task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                with open("tasks.json", "w") as tasks_file:
+                    json.dump(tasks_list, tasks_file, indent=2)
+                print(f"Task with id: {id} is now done")
+        
+        if not task_found:
+            print(f"No task with id: {id} was found")
+    
+
 
 def main():
     parser = argparse.ArgumentParser(prog="Task Tracker CLI", description="Simple Task Tracker")
@@ -117,8 +153,8 @@ def main():
     parser.add_argument("-l", "--list", action="store_true", help="List all tasks")
     parser.add_argument("-li", "--in-progress", help="List tasks that are in-progress")
     parser.add_argument("-ld", "--done", help="List tasks that are done")
-    parser.add_argument("-mi", "--mark-in-progress", help="Change status of a task to in progress")
-    parser.add_argument("-md", "--mark-done", help="Change status of a task to done")
+    parser.add_argument("-mi", "--mark-in-progress", nargs=1, type=int, help="Change status of a task to in progress")
+    parser.add_argument("-md", "--mark-done", nargs=1, type=int, help="Change status of a task to done")
     
     args = parser.parse_args()
     if args.add:
@@ -138,6 +174,10 @@ def main():
         list_in_progress()
     if args.done:
         list_done()
+    if args.mark_in_progress:
+        mark_in_progress(args.mark_in_progress[0])
+    if args.mark_done:
+        mark_done(args.mark_done[0])
 
 
         
