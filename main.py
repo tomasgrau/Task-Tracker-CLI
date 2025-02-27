@@ -10,6 +10,15 @@ def create_file(task):
     with open("tasks.json", "w") as tasks_file:
         json.dump([task], tasks_file, indent=2)
 
+def get_tasks():
+    with open("tasks.json", "r") as tasks_file:
+        tasks_list: list = json.load(tasks_file)
+        return tasks_list
+    
+def write_tasks(tasks_list):
+    with open("tasks.json", "w") as tasks_file:
+            json.dump(tasks_list, tasks_file, indent=2)
+
 def add_task(task: str):
     # Function to add a new task
     id = 0
@@ -23,54 +32,49 @@ def add_task(task: str):
     # Check if the tasks file exists
     if os.path.exists("tasks.json"):
         # Add task
-        with open("tasks.json", "r") as tasks_file:
-            tasks_list = json.load(tasks_file)
-            # Get last task id 
-            if tasks_list != []:
-                id = tasks_list[-1]["id"]
-                new_task["id"] = id + 1
-            # Save new task
-            tasks_list.append(new_task)
-            print("Task created successfully")
-        
-        with open("tasks.json", "w") as tasks_file:
-            json.dump(tasks_list, tasks_file, indent=2)
+        tasks_list = get_tasks() 
+        # Get last task id 
+        if tasks_list != []:
+            id = tasks_list[-1]["id"]
+            new_task["id"] = id + 1
+        # Save new task
+        tasks_list.append(new_task)
+        write_tasks(tasks_list)
+        print("Task created successfully")
 
     else:
         # Create tasks file and add new task
         create_file(new_task)
 
 def update_task(id: int, new_task: str):
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list = json.load(tasks_file)
-        for task in tasks_list:
-            if task["id"] == id:
-                task["description"] = new_task
-                task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            else:
-                print("This task doesn't exist")
-    with open("tasks.json", "w") as tasks_file:
-            json.dump(tasks_list, tasks_file, indent=2)
+    tasks_list = get_tasks()
+    updated_task = ""
+    for task in tasks_list:
+        if task["id"] == id:
+            task["description"] = new_task
+            task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            updated_task = task
+        else:
+            print(f"Task with id:{id} doesn't exist")
+    write_tasks(tasks_list)
+    print(f"Task updated!\n-------------------\nId: {updated_task["id"]}\nDescription: {updated_task["description"]}\nStatus: {updated_task["status"]}\nUpdated at: {updated_task["updatedAt"]}")
 
 def delete_task(id: int):
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list :list = json.load(tasks_file)
-        for i, task in enumerate(tasks_list):
-            if task["id"] == id:
-                print("Task found")
-                tasks_list.pop(i)
-                try:
-                    with open("tasks.json", "w") as tasks_file:
-                        json.dump(tasks_list, tasks_file, indent=2)
-                    return "Task deleted"
-                except IOError as e:
-                    print(f"Error writing to tasks file: {e}")
-                    return
-        print("Task not found")
+    tasks_list = get_tasks() 
+    for i, task in enumerate(tasks_list):
+        if task["id"] == id:
+            print("Task found")
+            tasks_list.pop(i)
+            try:
+                write_tasks(tasks_list)
+                return "Task deleted"
+            except IOError as e:
+                print(f"Error writing to tasks file: {e}")
+                return
+    print("Task not found")
 
 def list_tasks():
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list: list = json.load(tasks_file)
+        tasks_list = get_tasks()
         if tasks_list == []:
             print("There are not tasks yet")
             return
@@ -78,70 +82,62 @@ def list_tasks():
             print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")
 
 def list_in_progress():
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list: list = json.load(tasks_file)
-        if tasks_list == []:
-            print("There are not tasks yet")
-            return
-        
-        in_progress_found = False
-        for task in tasks_list:
-            if task["status"] == "in-progress":
-                print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")
-                in_progress_found = True
-        if not in_progress_found:
-            print("There are no tasks in-progress yet")
-        
+    tasks_list = get_tasks()
+    if tasks_list == []:
+        print("There are not tasks yet")
+        return
+    
+    in_progress_found = False
+    for task in tasks_list:
+        if task["status"] == "in-progress":
+            print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")
+            in_progress_found = True
+    if not in_progress_found:
+        print("There are no tasks in-progress yet")
+    
 
 def list_done():
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list: list = json.load(tasks_file)
-        if tasks_list == []:
-            print("There are not tasks yet")
-            return
+    tasks_list = get_tasks()
+    if tasks_list == []:
+        print("There are not tasks yet")
+        return
 
-        done_tasks_found = False
-        for task in tasks_list:
-            if task["status"] == "done":
-                print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")           
-                done_tasks_found = True
-        
-        if not done_tasks_found:
-            print("There are no tasks done yet")
+    done_tasks_found = False
+    for task in tasks_list:
+        if task["status"] == "done":
+            print(f"{task["id"]} - {task["description"]}, Status: {task["status"]}")           
+            done_tasks_found = True
+    
+    if not done_tasks_found:
+        print("There are no tasks done yet")
 
 def mark_in_progress(id):
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list = json.load(tasks_file)
+    tasks_list = get_tasks()
+    task_found = False
+    for task in tasks_list:
+        if task["id"] == id:
+            task_found = True
+            task["status"] = "in-progress"
+            task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            write_tasks(tasks_list)
+            print(f"Task with id: {id} is now in-progress")
 
-        task_found = False
-        for task in tasks_list:
-            if task["id"] == id:
-                task["status"] = "in-progress"
-                task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                task_found = True
-                with open("tasks.json", "w") as tasks_file:
-                    json.dump(tasks_list, tasks_file, indent=2)
-                print(f"Task with id: {id} is now in-progress")
-
-        if not task_found:
-            print(f"No task with id: {id} was found")
-
+    if not task_found:
+        print(f"No task with id: {id} was found")
 
 def mark_done(id):
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list = json.load(tasks_file)
-
-        task_found = False
-        for task in tasks_list:
-            if task["id"] == id:
-                task["status"] = "done"
-                task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                with open("tasks.json", "w") as tasks_file:
-                    json.dump(tasks_list, tasks_file, indent=2)
-                print(f"Task with id: {id} is now done")
-        
-        if not task_found:
-            print(f"No task with id: {id} was found")
+    tasks_list = get_tasks()
+    task_found = False
+    for task in tasks_list:
+        if task["id"] == id:
+            task_found = True
+            task["status"] = "done"
+            task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            write_tasks(tasks_list)
+            print(f"Task with id: {id} is now done")
+    
+    if not task_found:
+        print(f"No task with id: {id} was found")
     
 
 
@@ -151,8 +147,8 @@ def main():
     parser.add_argument("-u", "--update", nargs="+", help="Update a task already created")
     parser.add_argument("-d", "--delete", nargs=1, type=int, help="Delete a task")
     parser.add_argument("-l", "--list", action="store_true", help="List all tasks")
-    parser.add_argument("-li", "--in-progress", help="List tasks that are in-progress")
-    parser.add_argument("-ld", "--done", help="List tasks that are done")
+    parser.add_argument("-li", "--in-progress", action="store_true", help="List tasks that are in-progress")
+    parser.add_argument("-ld", "--done", action="store_true", help="List tasks that are done")
     parser.add_argument("-mi", "--mark-in-progress", nargs=1, type=int, help="Change status of a task to in progress")
     parser.add_argument("-md", "--mark-done", nargs=1, type=int, help="Change status of a task to done")
     
@@ -163,10 +159,8 @@ def main():
         id = int(args.update[0])
         task_args = args.update[1:]
         new_task = " ".join(task_args)
-        print(new_task)
         update_task(id, new_task)
     if args.delete:
-        print(args.delete[0])
         delete_task(args.delete[0])
     if args.list:
         list_tasks()
@@ -179,9 +173,6 @@ def main():
     if args.mark_done:
         mark_done(args.mark_done[0])
 
-
         
-        
-
 if __name__ == '__main__':
     main()
