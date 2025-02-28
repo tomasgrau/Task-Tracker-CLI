@@ -3,7 +3,7 @@ import json
 import os
 import task_tracker
 
-class TestTaskFile(unittest.TestCase):
+class TestCreateTaskFile(unittest.TestCase):
     def setUp(self):
         os.mkdir("test_dir")
         os.chdir("test_dir")
@@ -26,15 +26,38 @@ class TestTaskFile(unittest.TestCase):
         task_tracker.create_file(task)
         self.assertTrue(os.path.exists("tasks.json"))
 
-        
+class TestGetTasks(unittest.TestCase):
+    def test_get_tasks(self):
+        pass
 
-class TestStringMethods(unittest.TestCase):
-    
-    def test_upper(self):
-        self.assertEqual("foo".upper(), "FOO")
+class TestWriteTask(unittest.TestCase):
+    def test_write_task(self):
+        pass
 
-    def test_sum(self):
-        self.assertEqual(2+2,4)
+class TestTaskTracker(unittest.TestCase):
+    def test_add(self):
+        pass 
+
+    def test_update(self):
+        pass
+
+    def test_delete(self):
+        pass
+
+    def test_list(self):
+        pass
+
+    def test_list_in_progress(self):
+        pass
+
+    def test_list_done(self):    
+        pass
+
+    def test_mark_in_progress(self):
+        pass
+
+    def test_mark_done(self):
+        pass
 
 
 
