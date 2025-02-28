@@ -6,14 +6,17 @@ import os
 from datetime import datetime
 
 def create_file(task):
-    print(task)
     with open("tasks.json", "w") as tasks_file:
         json.dump([task], tasks_file, indent=2)
+    print(f"Task created!\n-------------------\nId: {task['id']}\nDescription: {task['description']}\nStatus: {task['status']}")
 
 def get_tasks():
-    with open("tasks.json", "r") as tasks_file:
-        tasks_list: list = json.load(tasks_file)
-        return tasks_list
+    try:
+        with open("tasks.json", "r") as tasks_file:
+            tasks_list: list = json.load(tasks_file)
+            return tasks_list
+    except FileNotFoundError:
+        return []
     
 def write_tasks(tasks_list):
     with open("tasks.json", "w") as tasks_file:
@@ -40,7 +43,8 @@ def add_task(task: str):
         # Save new task
         tasks_list.append(new_task)
         write_tasks(tasks_list)
-        print("Task created successfully")
+        print(f"Task created!\n-------------------\nId: {new_task['id']}\nDescription: {new_task['description']}\nStatus: {new_task['status']}")
+
 
     else:
         # Create tasks file and add new task
@@ -48,26 +52,36 @@ def add_task(task: str):
 
 def update_task(id: int, new_task: str):
     tasks_list = get_tasks()
-    updated_task = ""
+    if tasks_list == []:
+        print("There are not tasks yet")
+        return 
+    
+    task_found = False
     for task in tasks_list:
         if task["id"] == id:
             task["description"] = new_task
             task["updatedAt"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            updated_task = task
-        else:
-            print(f"Task with id:{id} doesn't exist")
-    write_tasks(tasks_list)
-    print(f"Task updated!\n-------------------\nId: {updated_task["id"]}\nDescription: {updated_task["description"]}\nStatus: {updated_task["status"]}\nUpdated at: {updated_task["updatedAt"]}")
+            task_found = True
+            break
+
+    if task_found:
+        write_tasks(tasks_list)
+        print(f"Task updated!\n-------------------\nId: {task['id']}\nDescription: {task['description']}\nStatus: {task['status']}\nUpdated at: {task['updatedAt']}")
+    else:
+        print(f"Task with id: {id} doesn't exist")
 
 def delete_task(id: int):
-    tasks_list = get_tasks() 
+    tasks_list = get_tasks()
+    if tasks_list == []:
+        print("There are not tasks yet")
+        return  
     for i, task in enumerate(tasks_list):
         if task["id"] == id:
-            print("Task found")
             tasks_list.pop(i)
             try:
                 write_tasks(tasks_list)
-                return "Task deleted"
+                print("Task deleted")
+                return 
             except IOError as e:
                 print(f"Error writing to tasks file: {e}")
                 return
@@ -113,6 +127,9 @@ def list_done():
 
 def mark_in_progress(id):
     tasks_list = get_tasks()
+    if tasks_list == []:
+        print("There are not tasks yet")
+        return 
     task_found = False
     for task in tasks_list:
         if task["id"] == id:
@@ -127,6 +144,7 @@ def mark_in_progress(id):
 
 def mark_done(id):
     tasks_list = get_tasks()
+    
     task_found = False
     for task in tasks_list:
         if task["id"] == id:
