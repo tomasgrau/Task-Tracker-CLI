@@ -69,11 +69,12 @@ def update_task(id: int, new_task: str):
         print(f"Task updated!\n-------------------\nId: {task['id']}\nDescription: {task['description']}\nStatus: {task['status']}\nUpdated at: {task['updatedAt']}")
     else:
         print(f"Task with id: {id} doesn't exist")
+        return False
 
 def delete_task(id: int):
     tasks_list = get_tasks()
     if tasks_list == []:
-        print("There are not tasks yet")
+        print("There are no tasks to delete")
         return  
     for i, task in enumerate(tasks_list):
         if task["id"] == id:

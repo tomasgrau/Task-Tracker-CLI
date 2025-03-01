@@ -180,24 +180,13 @@ class TestTaskTracker(unittest.TestCase):
         self.assertEqual(task_tracker.update_task(12, "Cook"), False)
 
     def test_delete(self):
-        pass
+        task_tracker.add_task("Cook")
+        task_tracker.delete_task(0)
+        with open("tasks.json", "r") as tasks_file:
+            tasks = json.load(tasks_file)
+        self.assertEqual(tasks,[])
 
-    def test_list(self):
-        pass
-
-    def test_list_in_progress(self):
-        pass
-
-    def test_list_done(self):    
-        pass
-
-    def test_mark_in_progress(self):
-        pass
-
-    def test_mark_done(self):
-        pass
-
-
+    # To-do, use logging to test stdout
 
 if __name__ == "__main__":
     unittest.main()
